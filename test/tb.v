@@ -60,24 +60,34 @@ module tb ();
     #25 rst_n = 1;
     ena = 1;
 
-    // 1) Parallel load: mode = 11
-    uio_in = 8'b10101010;   // Load pattern
-    ui_in[1:0] = 2'b11;     // Parallel load
-    #20;
+// 1) Parallel load: mode = 11
+uio_in = 8'b00001101;   // Load pattern 1101
+ui_in[1:0] = 2'b11;     // Parallel load
+ui_in[2] = 1'b0;        // serial_in_left
+ui_in[3] = 1'b0;        // serial_in_right
+#20;
 
-    // 2) Shift right: mode = 01, serial_in_left = 1
-    ui_in[1:0] = 2'b01;
-    ui_in[2] = 1'b1;
-    #40;
+// 2) Shift right: mode = 01
+ui_in[1:0] = 2'b01;
+ui_in[2] = 1'b1;
+ui_in[3] = 1'b0;
+#40;
 
-    // 3) Shift left: mode = 10, serial_in_right = 1
-    ui_in[1:0] = 2'b10;
-    ui_in[3] = 1'b1;
-    #40;
+// 3) Shift left: mode = 10
+ui_in[1:0] = 2'b10;
+ui_in[2] = 1'b0;
+ui_in[3] = 1'b1;
+#40;
 
-    // 4) Hold: mode = 00
-    ui_in[1:0] = 2'b00;
-    #40;
+// 4) Hold: mode = 00
+ui_in[1:0] = 2'b00;
+ui_in[2] = 1'b0;
+ui_in[3] = 1'b0;
+#40;
+
+$display("Final Q = %b", uo_out[3:0]);
+$finish;
+
 
 
   end
