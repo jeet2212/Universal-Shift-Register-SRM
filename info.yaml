@@ -22,27 +22,27 @@ project:
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
-  # Inputs
-  ui[0]: "SER_L"          # Serial input for left shift
-  ui[1]: "SER_R"          # Serial input for right shift
-  ui[2]: "MODE0"          # Mode select bit 0
-  ui[3]: "MODE1"          # Mode select bit 1
-  ui[4]: "PAR_LOAD"       # Parallel load enable (1 = load, 0 = shift/hold)
-  ui[5]: "CLR"            # Asynchronous clear/reset (active high)
-  ui[6]: "CLK_EN"         # Clock enable for shifting/loading
-  ui[7]: ""               # (Unused, leave blank)
+ # Inputs
+  ui[0]: "S0"
+  ui[1]: "S1"
+  ui[2]: "SL"
+  ui[3]: "SR"
+  ui[4]: "D0"
+  ui[5]: "D1"
+  ui[6]: "D2"
+  ui[7]: "D3"
 
   # Outputs
-  uo[0]: "Q0"             # Register bit 0 (LSB)
-  uo[1]: "Q1"             # Register bit 1
-  uo[2]: "Q2"             # Register bit 2
-  uo[3]: "Q3"             # Register bit 3 (MSB)
-  uo[4]: "LOAD_ACK"       # High when parallel load is executed
-  uo[5]: ""               # (Unused)
-  uo[6]: ""               # (Unused)
-  uo[7]: ""               # (Unused)
+  uo[0]: "Q0"
+  uo[1]: "Q1"
+  uo[2]: "Q2"
+  uo[3]: "Q3"
+  uo[4]: ""
+  uo[5]: ""
+  uo[6]: ""
+  uo[7]: ""
 
-  # Bidirectional pins (not used in this design)
+  # Bidirectional pins (unused)
   uio[0]: ""
   uio[1]: ""
   uio[2]: ""
