@@ -79,8 +79,7 @@ module tb ();
     ui_in[1:0] = 2'b00;
     #40;
 
-    // Finish simulation
-    $finish;
+
   end
 
 endmodule
