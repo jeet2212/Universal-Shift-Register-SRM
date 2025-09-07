@@ -29,11 +29,12 @@ async def test_universal_shift_register(dut):
     dut.ui_in.value = 0
     await ClockCycles(dut.clk, 2)
 
-    # Parallel Load (ui[4] = 1, data = Q3..Q0)
+   # Parallel Load (ui[4]=1, CLK_EN=1, data=Q3..Q0 on ui[3:0])
     parallel_data = 0b1101  # Load into Q3..Q0
     dut._log.info(f"Parallel Loading {parallel_data:04b}")
-    dut.ui_in.value = (1 << 4) | (parallel_data & 0xF)  # PAR_LOAD=1
+    dut.ui_in.value = (1 << 6) | (1 << 4) | (parallel_data & 0xF)  # Add CLK_EN
     await ClockCycles(dut.clk, 1)
+
 
     # Check parallel load result
     actual = int(dut.uo_out.value & 0xF)
