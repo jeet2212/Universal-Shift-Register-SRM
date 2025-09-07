@@ -1,20 +1,16 @@
 # SPDX-FileCopyrightText: © 2024 Tiny Tapeout
 # SPDX-License-Identifier: Apache-2.0
 
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
-
-# SPDX-License-Identifier: Apache-2.0
-
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 
-@cocotb.test()
-async def test_universal_shift_register(dut):
-    dut._log.info("Starting Universal Shift Register Test")
 
-    # Clock: 10us period
+@cocotb.test()
+async def test_usr(dut):
+    dut._log.info("Starting Universal Shift Register test")
+
+    # 100 KHz clock (10 us period)
     clock = Clock(dut.clk, 10, units="us")
     cocotb.start_soon(clock.start())
 
@@ -27,41 +23,35 @@ async def test_universal_shift_register(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 1)
 
-    # --- Test Parallel Load (Mode = 11) ---
-    dut._log.info("Testing Parallel Load")
-    parallel_data = 0b1101  # 13 decimal
-    dut.ui_in.value = 0b11      # mode = 11 (parallel load)
-    dut.uio_in.value = parallel_data
+    # Helper: drive inputs
+    def set_inputs(S1, S0, SL, SR, D3, D2, D1, D0):
+        dut.ui_in.value = (D3 << 7) | (D2 << 6) | (D1 << 5) | (D0 << 4) \
+                        | (SR << 3) | (SL << 2) | (S1 << 1) | (S0 << 0)
+
+    # --- Test sequence ---
+
+    # 1. Parallel load D=1011
+    dut._log.info("Parallel load D=1011")
+    set_inputs(S1=1, S0=1, SL=0, SR=0, D3=1, D2=0, D1=1, D0=1)
     await ClockCycles(dut.clk, 1)
-    actual = int(dut.uo_out.value & 0xF)  # Only lower 4 bits
-    assert actual == parallel_data, f"Parallel load failed: expected {parallel_data:04b}, got {actual:04b}"
+    assert dut.uo_out.value.integer & 0xF == 0b1011, f"Expected 1011, got {dut.uo_out.value.binstr}"
 
-    # --- Test Shift Right (Mode = 01) ---
-    dut._log.info("Testing Shift Right")
-    dut.ui_in.value = 0b01 | (0 << 2)  # mode = 01, serial_in_left=0
+    # 2. Hold
+    dut._log.info("Hold")
+    set_inputs(S1=0, S0=0, SL=0, SR=0, D3=0, D2=0, D1=0, D0=0)
     await ClockCycles(dut.clk, 1)
-    expected_sr = (parallel_data >> 1) | (0 << 3)
-    actual = int(dut.uo_out.value & 0xF)
-    assert actual == expected_sr, f"Shift Right failed: expected {expected_sr:04b}, got {actual:04b}"
+    assert dut.uo_out.value.integer & 0xF == 0b1011
 
-    # --- Test Shift Left (Mode = 10) ---
-    dut._log.info("Testing Shift Left")
-    dut.ui_in.value = 0b10 | (1 << 3)  # mode = 10, serial_in_right=1
+    # 3. Shift right, SR=1
+    dut._log.info("Shift right, SR=1")
+    set_inputs(S1=0, S0=1, SL=0, SR=1, D3=0, D2=0, D1=0, D0=0)
     await ClockCycles(dut.clk, 1)
-    expected_sl = ((expected_sr << 1) & 0xF) | 1
-    actual = int(dut.uo_out.value & 0xF)
-    assert actual == expected_sl, f"Shift Left failed: expected {expected_sl:04b}, got {actual:04b}"
+    assert dut.uo_out.value.integer & 0xF == 0b1101, f"Expected 1101, got {dut.uo_out.value.binstr}"
 
-    # --- Test Hold (Mode = 00) ---
-    dut._log.info("Testing Hold")
-    dut.ui_in.value = 0b00  # mode = 00 (hold)
-    await ClockCycles(dut.clk, 2)
-    actual = int(dut.uo_out.value & 0xF)
-    assert actual == expected_sl, f"Hold failed: expected {expected_sl:04b}, got {actual:04b}"
+    # 4. Shift left, SL=1
+    dut._log.info("Shift left, SL=1")
+    set_inputs(S1=1, S0=0, SL=1, SR=0, D3=0, D2=0, D1=0, D0=0)
+    await ClockCycles(dut.clk, 1)
+    assert dut.uo_out.value.integer & 0xF == 0b1011, f"Expected 1011, got {dut.uo_out.value.binstr}"
 
-    dut._log.info("Universal Shift Register Test Passed!")
-
-
-
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    dut._log.info("USR test completed successfully")
